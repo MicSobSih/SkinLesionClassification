@@ -117,8 +117,6 @@ if __name__ == "__main__":
         meta_csv=meta_csv,
         image_folders=image_folders,
         out_train_csv=Path("train.csv"),
-        out_valid_csv=Path("valid.csv"),
-        split=0.8,
-        seed=42,
+        out_valid_csv=Path("valid.csv")
     )
     print(paths)
