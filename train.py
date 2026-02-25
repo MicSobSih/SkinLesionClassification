@@ -1,13 +1,11 @@
 import pandas as pd
 import numpy as np
-from keras.layers import Dropout, Dense
-from keras import Input, Model
 from keras.optimizers import Adam
 from keras.losses import BinaryFocalCrossentropy
 from keras.metrics import BinaryAccuracy, Precision, Recall, AUC
-from vit_keras import vit
 
 from data import make_dataset_from_csv, LABEL_TO_ID, IMG_SIZE
+from model import ViTSkinLesionModel
 
 
 def compute_class_weight_from_df(train_df: pd.DataFrame) -> dict[int, float]:
@@ -27,18 +25,7 @@ if __name__ == "__main__":
     class_weight = compute_class_weight_from_df(train_df)
     print("class_weight:", class_weight)
 
-    backbone = vit.vit_b16(
-        classes=2,
-        include_top=False,
-        pretrained_top=False
-    )
-    backbone.trainable = False
-
-    inputs = Input(shape=(IMG_SIZE, IMG_SIZE, 3))
-    x = backbone(inputs, training=False)  # x shape: (None, 768)
-    x = Dropout(0.2)(x)
-    outputs = Dense(1, activation="sigmoid")(x)
-    model = Model(inputs, outputs)
+    model = ViTSkinLesionModel(IMG_SIZE, dropout=0.2).build()
 
     model.compile(
         optimizer=Adam(), #1e-4
@@ -56,6 +43,6 @@ if __name__ == "__main__":
     history = model.fit(
         train_ds,
         validation_data=valid_ds,
-        epochs=10,
+        epochs=5,
         class_weight=class_weight,
     )
