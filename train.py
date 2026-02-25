@@ -16,7 +16,8 @@ def compute_class_weight_from_df(train_df: pd.DataFrame) -> dict[int, float]:
     # Inverse frequency weighting: higher weight for the minority class
     w0 = total / (2.0 * n0) if n0 else 1.0
     w1 = total / (2.0 * n1) if n1 else 1.0
-    return {0: float(w0), 1: float(w1)}
+    class_weights = {0: float(w0), 1: float(w1)}
+    return class_weights
 
 if __name__ == "__main__":
     train_ds, train_df = make_dataset_from_csv("train.csv", training=True)
@@ -44,6 +45,6 @@ if __name__ == "__main__":
     history = model.fit(
         train_ds,
         validation_data=valid_ds,
-        epochs=1,
+        epochs=5,
         class_weight=class_weight,
     )
