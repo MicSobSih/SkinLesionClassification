@@ -1,6 +1,10 @@
 import pandas as pd
 import numpy as np
-import tensorflow as tf
+from keras.layers import Dropout, Dense
+from keras import Input, Model
+from keras.optimizers import Adam
+from keras.losses import BinaryFocalCrossentropy
+from keras.metrics import BinaryAccuracy, Precision, Recall, AUC
 from vit_keras import vit
 
 from data import make_dataset_from_csv, LABEL_TO_ID, IMG_SIZE
@@ -30,29 +34,28 @@ if __name__ == "__main__":
     )
     backbone.trainable = False
 
-    inputs = tf.keras.Input(shape=(IMG_SIZE, IMG_SIZE, 3))
+    inputs = Input(shape=(IMG_SIZE, IMG_SIZE, 3))
     x = backbone(inputs, training=False)  # x shape: (None, 768)
-    x = tf.keras.layers.Dropout(0.2)(x)
-    outputs = tf.keras.layers.Dense(1, activation="sigmoid")(x)
-    model = tf.keras.Model(inputs, outputs)
+    x = Dropout(0.2)(x)
+    outputs = Dense(1, activation="sigmoid")(x)
+    model = Model(inputs, outputs)
 
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(), #1e-4
-        loss=tf.keras.losses.BinaryCrossentropy(),
+        optimizer=Adam(), #1e-4
+        loss=BinaryFocalCrossentropy(),
         metrics=[
-            tf.keras.metrics.BinaryAccuracy(name="acc"),
-            tf.keras.metrics.AUC(name="auc"),
-            tf.keras.metrics.Precision(name="precision"),
-            tf.keras.metrics.Recall(name="recall"),
-            tf.keras.metrics.F1Score(name="f1")
+            BinaryAccuracy(name="acc"),
+            AUC(name="auc"),
+            Precision(name="precision"),
+            Recall(name="recall")
         ],
     )
 
     model.summary()
 
-    # history = model.fit(
-    #     train_ds,
-    #     validation_data=valid_ds,
-    #     epochs=10,
-    #     class_weight=class_weight,
-    # )
+    history = model.fit(
+        train_ds,
+        validation_data=valid_ds,
+        epochs=10,
+        class_weight=class_weight,
+    )
