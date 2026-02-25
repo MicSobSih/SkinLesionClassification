@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from keras.optimizers import Adam
 from keras.losses import BinaryFocalCrossentropy
-from keras.metrics import BinaryAccuracy, Precision, Recall, AUC
+from keras.metrics import BinaryAccuracy, Precision, Recall, AUC, SpecificityAtSensitivity
 
 from data import make_dataset_from_csv, LABEL_TO_ID, IMG_SIZE
 from model import ViTSkinLesionModel
@@ -32,9 +32,10 @@ if __name__ == "__main__":
         loss=BinaryFocalCrossentropy(),
         metrics=[
             BinaryAccuracy(name="acc"),
-            AUC(name="auc"),
+            AUC(name="auc", curve="PR"),
             Precision(name="precision"),
-            Recall(name="recall")
+            Recall(name="recall"),
+            SpecificityAtSensitivity(name="specificity", sensitivity=0.5),
         ],
     )
 
@@ -43,6 +44,6 @@ if __name__ == "__main__":
     history = model.fit(
         train_ds,
         validation_data=valid_ds,
-        epochs=5,
+        epochs=1,
         class_weight=class_weight,
     )
