@@ -3,6 +3,8 @@ import numpy as np
 from keras.optimizers import Adam
 from keras.losses import BinaryFocalCrossentropy
 from keras.metrics import BinaryAccuracy, Precision, Recall, AUC, SpecificityAtSensitivity
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+from pathlib import Path
 
 from data import make_dataset_from_csv, LABEL_TO_ID, IMG_SIZE
 from model import ViTSkinLesionModel
@@ -36,8 +38,27 @@ if __name__ == "__main__":
             AUC(name="auc", curve="PR"),
             Precision(name="precision"),
             Recall(name="recall"),
-            SpecificityAtSensitivity(name="specificity", sensitivity=0.5),
+            SpecificityAtSensitivity(name="specificity", sensitivity=0.9)
         ],
+    )
+
+    MODELS_DIR = Path("models")
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+
+    model_checkpoint = ModelCheckpoint(
+        filepath=MODELS_DIR / "ViT-val_auc.keras",
+        monitor="val_auc",
+        mode="max",
+        verbose=1,
+        save_best_only=True
+    )
+
+    early_stopping = EarlyStopping(
+        monitor="val_loss",
+        mode="min",
+        patience=10,
+        verbose=1,
+        restore_best_weights=True
     )
 
     model.summary()
@@ -47,4 +68,5 @@ if __name__ == "__main__":
         validation_data=valid_ds,
         epochs=5,
         class_weight=class_weight,
+        callbacks=[model_checkpoint, early_stopping]
     )
