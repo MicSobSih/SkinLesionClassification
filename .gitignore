@@ -211,3 +211,6 @@ dataverse_files/
 
 # Models
 models/
+
+# Plots
+plots/

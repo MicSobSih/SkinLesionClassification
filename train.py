@@ -1,13 +1,15 @@
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 from keras.optimizers import Adam
 from keras.losses import BinaryFocalCrossentropy
 from keras.metrics import BinaryAccuracy, Precision, Recall, AUC, SpecificityAtSensitivity
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-from pathlib import Path
 
 from data import make_dataset_from_csv, LABEL_TO_ID, IMG_SIZE
 from model import ViTSkinLesionModel
+from plots import save_metric_plots
 
 
 def compute_class_weight_from_df(train_df: pd.DataFrame) -> dict[int, float]:
@@ -42,11 +44,11 @@ if __name__ == "__main__":
         ],
     )
 
-    MODELS_DIR = Path("models")
-    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    models_dir = Path("models")
+    models_dir.mkdir(parents=True, exist_ok=True)
 
     model_checkpoint = ModelCheckpoint(
-        filepath=MODELS_DIR / "ViT-val_auc.keras",
+        filepath=models_dir / "ViT-val_auc.keras",
         monitor="val_auc",
         mode="max",
         verbose=1,
@@ -70,3 +72,5 @@ if __name__ == "__main__":
         class_weight=class_weight,
         callbacks=[model_checkpoint, early_stopping]
     )
+
+    save_metric_plots(history)
